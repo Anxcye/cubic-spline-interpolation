@@ -1,30 +1,26 @@
-import { matrix, inv, multiply } from "mathjs";
-import { generateMatrix } from "./matrix";
-
-
-console.log('hello CubicSplineInterpolation')
-
-function cubicSplineInterpolation(x: number[], y: number[], boundary: string, alpha: number, beta: number): ((t: number) => number) {
-    const mu = new Array(x.length);
-    const lambda = new Array(x.length);
-    const n = x.length - 1;
-    const h = new Array(n);
-    const d = new Array(n + 1);
-    let size = 0;
-    let lambdaOffset = 0;
-    let miuOffset = 0;
-
-    for (let i = 0; i < n; i++) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var mathjs_1 = require("mathjs");
+var matrix_1 = require("./matrix");
+console.log('hello CubicSplineInterpolation');
+function cubicSplineInterpolation(x, y, boundary, alpha, beta) {
+    var _a, _b, _c;
+    var mu = new Array(x.length);
+    var lambda = new Array(x.length);
+    var n = x.length - 1;
+    var h = new Array(n);
+    var d = new Array(n + 1);
+    var size = 0;
+    var lambdaOffset = 0;
+    var miuOffset = 0;
+    for (var i = 0; i < n; i++) {
         h[i] = x[i + 1] - x[i];
     }
-
-
-    for (let i = 0; i <= n; i++) {
-        mu[i] = h[i - 1] / (h[i-1] + h[i]);
+    for (var i = 0; i <= n; i++) {
+        mu[i] = h[i - 1] / (h[i - 1] + h[i]);
         lambda[i] = h[i] / (h[i - 1] + h[i]);
         d[i] = 6 * ((y[i + 1] - y[i]) / h[i] - (y[i] - y[i - 1]) / h[i - 1]) / (h[i - 1] + h[i]);
     }
-
     switch (boundary) {
         // 两端一阶导数已知
         case 'clamped':
@@ -60,55 +56,43 @@ function cubicSplineInterpolation(x: number[], y: number[], boundary: string, al
             throw new Error('Invalid boundary condition');
     }
     console.log('mu\tlambda\td');
-    
-    for (let i = 0; i <= n; i++) {
-        console.log(mu[i]?.toFixed(3) + '\t' +
-            lambda[i]?.toFixed(3) + '\t' +
-            d[i]?.toFixed(3));
+    for (var i = 0; i <= n; i++) {
+        console.log(((_a = mu[i]) === null || _a === void 0 ? void 0 : _a.toFixed(3)) + '\t' +
+            ((_b = lambda[i]) === null || _b === void 0 ? void 0 : _b.toFixed(3)) + '\t' +
+            ((_c = d[i]) === null || _c === void 0 ? void 0 : _c.toFixed(3)));
     }
     console.log('-------------------');
-
-    let mat = generateMatrix(size, new Array(size).fill(2),
-                                   lambda.slice(lambdaOffset, -1),
-                                   mu.slice(miuOffset));
-
+    var mat = (0, matrix_1.generateMatrix)(size, new Array(size).fill(2), lambda.slice(lambdaOffset, -1), mu.slice(miuOffset));
     // if (boundary === 'periodic') {
     //     mat[0][size - 1] = mu[1];
     //     mat[size - 1][0] = lambda[n];
     // }
-
     // console.log('Matrix:', mat);
     // console.log('d:', d.slice(lambdaOffset));
-    
     // 原始结果
-    const preAns = multiply(inv(matrix(mat)), d.slice(lambdaOffset));
-    const m = new Array(size);
-    for (let i = 0; i < size; i++) {
+    var preAns = (0, mathjs_1.multiply)((0, mathjs_1.inv)((0, mathjs_1.matrix)(mat)), d.slice(lambdaOffset));
+    var m = new Array(size);
+    for (var i = 0; i < size; i++) {
         m[i] = preAns._data[i];
-    
     }
     console.log(m);
-   
-    return (t: number) => {
-        let k = 0;
+    return function (t) {
+        var k = 0;
         while (k < n && t > x[k + 1]) {
             k++;
         }
-        const hk = x[k + 1] - x[k];
-        const ak = (x[k + 1] - t) / hk;
-        const bk = (t - x[k]) / hk;
-        return ak * y[k] + bk * y[k + 1] + ((ak ** 3 - ak) * hk ** 2 * m[k] + (bk ** 3 - bk) * hk ** 2 * m[k + 1]) / 6;
+        var hk = x[k + 1] - x[k];
+        var ak = (x[k + 1] - t) / hk;
+        var bk = (t - x[k]) / hk;
+        return ak * y[k] + bk * y[k + 1] + ((Math.pow(ak, 3) - ak) * Math.pow(hk, 2) * m[k] + (Math.pow(bk, 3) - bk) * Math.pow(hk, 2) * m[k + 1]) / 6;
     };
 }
-
-const x = [27.7, 28, 29, 30];
-const y = [4.1, 4.3, 4.1, 3];
-const boundaryCondition = 'clamped';
-const alpha = 3.0;
-const beta = -4;
-
-const f = cubicSplineInterpolation(x, y, boundaryCondition, alpha, beta);
-
+var x = [27.7, 28, 29, 30];
+var y = [4.1, 4.3, 4.1, 3];
+var boundaryCondition = 'clamped';
+var alpha = 3.0;
+var beta = -4;
+var f = cubicSplineInterpolation(x, y, boundaryCondition, alpha, beta);
 console.log(f(28).toFixed(3));
 console.log(f(28.5).toFixed(3));
 console.log(f(29).toFixed(3));
