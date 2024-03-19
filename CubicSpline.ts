@@ -13,6 +13,7 @@ function cubicSplineInterpolation(x: number[], y: number[], boundary: string, al
     let size = 0;
     let lambdaOffset = 0;
     let miuOffset = 0;
+    let bdc = 0;
 
     for (let i = 0; i < n; i++) {
         h[i] = x[i + 1] - x[i];
@@ -35,6 +36,7 @@ function cubicSplineInterpolation(x: number[], y: number[], boundary: string, al
             size = n + 1;
             miuOffset = 1;
             lambdaOffset = 0;
+            bdc = 1;
             break;
         // 两端二阶导数已知 
         case 'not-a-knot':
@@ -47,6 +49,7 @@ function cubicSplineInterpolation(x: number[], y: number[], boundary: string, al
             size = n + 1;
             miuOffset = 1;
             lambdaOffset = 0;
+            bdc = 2;
             break;
         // 周期样条函数
         case 'periodic':
@@ -56,6 +59,7 @@ function cubicSplineInterpolation(x: number[], y: number[], boundary: string, al
             size = n;
             miuOffset = 2;
             lambdaOffset = 1;
+            bdc = 3;
         default:
             throw new Error('Invalid boundary condition');
     }
@@ -72,10 +76,10 @@ function cubicSplineInterpolation(x: number[], y: number[], boundary: string, al
                                    lambda.slice(lambdaOffset, -1),
                                    mu.slice(miuOffset));
 
-    // if (boundary === 'periodic') {
-    //     mat[0][size - 1] = mu[1];
-    //     mat[size - 1][0] = lambda[n];
-    // }
+    if (bdc === 3) {
+        mat[0][size - 1] = mu[1];
+        mat[size - 1][0] = lambda[n];
+    }
 
     // console.log('Matrix:', mat);
     // console.log('d:', d.slice(lambdaOffset));
@@ -101,8 +105,8 @@ function cubicSplineInterpolation(x: number[], y: number[], boundary: string, al
     };
 }
 
-const x = [27.7, 28, 29, 30];
-const y = [4.1, 4.3, 4.1, 3];
+const x = [27.7, 28 , 29 , 30];
+const y = [4.1 , 4.3, 4.1, 3 ];
 const boundaryCondition = 'clamped';
 const alpha = 3.0;
 const beta = -4;
